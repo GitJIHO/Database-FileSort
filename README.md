@@ -70,25 +70,25 @@ Performing Range Search in SortedFile from 40 to 80:
 ### PerformanceTest
 ```
 HeapFile Performance Test:
-HeapFile Insert Time: 754.01 ms
+HeapFile Insert Time: 1037.65 ms
 Disk Reads: 937
 Disk Writes: 2000
-HeapFile Search Time for 1000 searches: 7655.52 ms
-HeapFile Range Search Time for 1000 ranges: 7738.33 ms
-Disk Reads: 123465
+HeapFile Search Time for 1000 searches: 7919.19 ms
+HeapFile Range Search Time for 1000 ranges: 7882.06 ms
+Disk Reads: 123056
 Disk Writes: 0
 
 SortedFile Performance Test:
-SortedFile Insert Time: 3940.63 ms
+SortedFile Insert Time: 3963.35 ms
 Disk Reads: 31689
 Disk Writes: 2000
-SortedFile Search Time for 1000 searches: 8460.50 ms
-SortedFile Range Search Time for 1000 ranges: 7531.13 ms
-Disk Reads: 123465
+SortedFile Search Time for 1000 searches: 7173.80 ms
+SortedFile Range Search Time for 1000 ranges: 7520.99 ms
+Disk Reads: 123056
 Disk Writes: 0
 
 Performance Comparison Summary:
-Insertion Time: SortedFile is 0.19 times faster than HeapFile
-Search Time: SortedFile is 0.90 times faster than HeapFile
-Range Search Time: SortedFile is 1.03 times faster than HeapFile
+Insertion Time: SortedFile is 0.26 times faster than HeapFile
+Search Time: SortedFile is 1.10 times faster than HeapFile
+Range Search Time: SortedFile is 1.05 times faster than HeapFile
 ```
