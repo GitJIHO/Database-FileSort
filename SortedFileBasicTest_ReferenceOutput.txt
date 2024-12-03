@@ -1,0 +1,25 @@
+SortedFile Pages:
+Page 0: 10,20,30,40,50,60,70,80,90,100,110,120,130,140,150,160
+Page 1: 170,180,190,200,210,220,230,240,X,X,X,X,X,X,X,X
+
+SortedFile Pages:
+Page 0: 10,30,50,70,90,110,130,150,170,190,210,230,X,X,X,X
+
+SortedFile Pages:
+Page 0: 10,15,30,35,50,55,70,75,90,95,110,115,130,135,150,155
+Page 1: 170,175,190,195,210,215,230,235,X,X,X,X,X,X,X,X
+
+Searching for Record with Key 15 in SortedFile:
+Found Record Key: 15, Data: SortedData15                                                                                                                                                                                                                                              
+
+Deleting Record with Key 50 in SortedFile:
+Record with Key 50 deleted successfully.
+
+SortedFile Pages:
+Page 0: 10,15,30,35,55,70,75,90,95,110,115,130,135,150,155,170
+Page 1: 175,190,195,210,215,230,235,X,X,X,X,X,X,X,X,X
+
+Performing Range Search in SortedFile from 40 to 80:
+  Record Key: 55, Data: SortedData55                                                                                                                                                                                                                                              
+  Record Key: 70, Data: SortedData70                                                                                                                                                                                                                                              
+  Record Key: 75, Data: SortedData75                                                                                                                                                                                                                                              
