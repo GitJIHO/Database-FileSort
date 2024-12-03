@@ -39,12 +39,9 @@ public class SortedFile {
             Page page = readPageFromDisk(pageInfo.getOffset());
             for (int i = 0; i < Page.SLOT_COUNT; i++) {
                 if (!page.isSlotUsed(i) || page.getRecord(i).getKey() > record.getKey()) {
-                    // 빈 슬롯이 있거나, 정렬 위치를 발견했을 경우
                     if (page.isSlotUsed(Page.SLOT_COUNT - 1)) {
-                        // 마지막 슬롯이 사용 중인 경우 현재 페이지에 삽입 불가능
                         break;
                     }
-                    // 데이터를 오른쪽으로 이동하며 삽입
                     for (int j = Page.SLOT_COUNT - 1; j > i; j--) {
                         if (page.isSlotUsed(j - 1)) {
                             page.insertRecord(j, page.getRecord(j - 1));
@@ -101,7 +98,6 @@ public class SortedFile {
             for (int i = 0; i < Page.SLOT_COUNT; i++) {
                 if (page.isSlotUsed(i) && page.getRecord(i).getKey() == key) {
                     page.deleteRecord(i);
-                    // 레코드 삭제 후 정렬된 상태를 유지하기 위해 데이터를 왼쪽으로 이동
                     for (int j = i; j < Page.SLOT_COUNT - 1; j++) {
                         if (page.isSlotUsed(j + 1)) {
                             page.insertRecord(j, page.getRecord(j + 1));
