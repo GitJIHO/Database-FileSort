@@ -76,9 +76,28 @@ public class SortedFile {
     public Record searchRecord(int key) throws IOException {
         for (PageInfo pageInfo : pageDirectory.getPages()) {
             Page page = readPageFromDisk(pageInfo.getOffset());
-            for (int i = 0; i < Page.SLOT_COUNT; i++) {
-                if (page.isSlotUsed(i) && page.getRecord(i).getKey() == key) {
-                    return page.getRecord(i);
+
+            // 이진 탐색을 사용하여 레코드 검색
+            int left = 0;
+            int right = Page.SLOT_COUNT - 1;
+
+            while (left <= right) {
+                int mid = left + (right - left) / 2;
+
+                if (!page.isSlotUsed(mid)) {
+                    // 해당 슬롯이 사용되지 않은 경우 검색을 계속
+                    right = mid - 1;
+                    continue;
+                }
+
+                Record record = page.getRecord(mid);
+
+                if (record.getKey() == key) {
+                    return record; // 키가 일치하는 경우 레코드를 반환
+                } else if (record.getKey() < key) {
+                    left = mid + 1; // 키가 더 큰 경우 오른쪽 절반을 검색
+                } else {
+                    right = mid - 1; // 키가 더 작은 경우 왼쪽 절반을 검색
                 }
             }
         }
@@ -124,19 +143,45 @@ public class SortedFile {
      */
     public List<Record> rangeSearch(int lowerBound, int upperBound) throws IOException {
         List<Record> result = new ArrayList<>();
+
         for (PageInfo pageInfo : pageDirectory.getPages()) {
             Page page = readPageFromDisk(pageInfo.getOffset());
-            for (int i = 0; i < Page.SLOT_COUNT; i++) {
+
+            // 범위 검색을 위한 이진 탐색 시작
+            int left = 0;
+            int right = Page.SLOT_COUNT - 1;
+
+            // Find the first record that is greater than or equal to lowerBound
+            while (left <= right) {
+                int mid = left + (right - left) / 2;
+                if (!page.isSlotUsed(mid)) {
+                    right = mid - 1;
+                    continue;
+                }
+
+                Record record = page.getRecord(mid);
+                if (record.getKey() >= lowerBound) {
+                    right = mid - 1; // Still in the range, but check if we can go left
+                } else {
+                    left = mid + 1; // Go right
+                }
+            }
+
+            // left should be pointing at the first record >= lowerBound
+            for (int i = left; i < Page.SLOT_COUNT && i < right + 1; i++) {
                 if (page.isSlotUsed(i)) {
                     Record record = page.getRecord(i);
-                    if (record.getKey() >= lowerBound && record.getKey() <= upperBound) {
+                    if (record.getKey() <= upperBound) {
                         result.add(record);
+                    } else {
+                        break; // Stop as soon as we go beyond the upperBound
                     }
                 }
             }
         }
         return result;
     }
+
 
     /**
      * Prints all pages and their records in the sorted file.
