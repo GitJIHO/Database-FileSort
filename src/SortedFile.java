@@ -147,11 +147,10 @@ public class SortedFile {
         for (PageInfo pageInfo : pageDirectory.getPages()) {
             Page page = readPageFromDisk(pageInfo.getOffset());
 
-            // 범위 검색을 위한 이진 탐색 시작
+            // 이진 탐색으로 lowerBound 이상의 첫 번째 레코드 위치 찾기
             int left = 0;
             int right = Page.SLOT_COUNT - 1;
 
-            // Find the first record that is greater than or equal to lowerBound
             while (left <= right) {
                 int mid = left + (right - left) / 2;
                 if (!page.isSlotUsed(mid)) {
@@ -161,24 +160,27 @@ public class SortedFile {
 
                 Record record = page.getRecord(mid);
                 if (record.getKey() >= lowerBound) {
-                    right = mid - 1; // Still in the range, but check if we can go left
+                    right = mid - 1; // 왼쪽으로 범위 좁힘
                 } else {
-                    left = mid + 1; // Go right
+                    left = mid + 1; // 오른쪽으로 범위 좁힘
                 }
             }
 
-            // left should be pointing at the first record >= lowerBound
-            for (int i = left; i < Page.SLOT_COUNT && i < right + 1; i++) {
-                if (page.isSlotUsed(i)) {
-                    Record record = page.getRecord(i);
-                    if (record.getKey() <= upperBound) {
-                        result.add(record);
-                    } else {
-                        break; // Stop as soon as we go beyond the upperBound
-                    }
+            // left부터 시작하여 범위 내 레코드 수집
+            for (int i = left; i < Page.SLOT_COUNT; i++) {
+                if (!page.isSlotUsed(i)) {
+                    break; // 사용되지 않은 슬롯 이후 탐색 중단
                 }
+
+                Record record = page.getRecord(i);
+                if (record.getKey() > upperBound) {
+                    break; // upperBound를 초과하면 탐색 중단
+                }
+
+                result.add(record);
             }
         }
+
         return result;
     }
 
