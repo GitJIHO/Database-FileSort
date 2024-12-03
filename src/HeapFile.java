@@ -36,23 +36,26 @@ public class HeapFile {
      * @throws IOException If an I/O error occurs during the operation.
      */
     public void insertRecord(Record record) throws IOException {
+        // 기존 페이지들을 순차적으로 확인하여 빈 슬롯이 있는지 확인
         for (PageInfo pageInfo : pageDirectory.getPages()) {
             if (pageInfo.getFreeSlots() > 0) {
                 Page page = readPageFromDisk(pageInfo.getOffset());
+                // 빈 슬롯을 찾아 레코드 삽입
                 for (int i = 0; i < Page.SLOT_COUNT; i++) {
                     if (!page.isSlotUsed(i)) {
                         page.insertRecord(i, record);
                         pageInfo.setFreeSlots(pageInfo.getFreeSlots() - 1);
-                        writePageToDisk(page, pageInfo);
-                        writeDirectoryToDisk();
+                        writePageToDisk(page, pageInfo); // 변경된 페이지 디스크에 기록
+                        writeDirectoryToDisk(); // 페이지 디렉토리 갱신
                         return;
                     }
                 }
             }
         }
+        // 빈 슬롯이 없다면 새로운 페이지를 생성하여 삽입
         Page newPage = new Page();
         newPage.insertRecord(0, record);
-        long offset = new File(dataFilename).length();
+        long offset = new File(dataFilename).length(); // 새로운 페이지의 오프셋
         PageInfo newPageInfo = new PageInfo(offset, Page.SLOT_COUNT - 1);
         pageDirectory.addPage(newPageInfo);
         writePageToDisk(newPage, newPageInfo);
@@ -67,15 +70,17 @@ public class HeapFile {
      * @throws IOException If an I/O error occurs during the operation.
      */
     public Record searchRecord(int key) throws IOException {
+        // 페이지 디렉토리 내 모든 페이지를 순차적으로 검색
         for (PageInfo pageInfo : pageDirectory.getPages()) {
             Page page = readPageFromDisk(pageInfo.getOffset());
+            // 각 페이지에서 레코드의 키가 일치하는지 확인
             for (int i = 0; i < Page.SLOT_COUNT; i++) {
                 if (page.isSlotUsed(i) && page.getRecord(i).getKey() == key) {
-                    return page.getRecord(i);
+                    return page.getRecord(i); // 일치하는 레코드를 찾으면 반환
                 }
             }
         }
-        return null; // Record not found
+        return null; // 레코드가 없으면 null 반환
     }
 
     /**
@@ -86,19 +91,21 @@ public class HeapFile {
      * @throws IOException If an I/O error occurs during the operation.
      */
     public boolean deleteRecord(int key) throws IOException {
+        // 페이지 디렉토리 내 모든 페이지를 순차적으로 검색
         for (PageInfo pageInfo : pageDirectory.getPages()) {
             Page page = readPageFromDisk(pageInfo.getOffset());
+            // 각 페이지에서 레코드의 키가 일치하는지 확인
             for (int i = 0; i < Page.SLOT_COUNT; i++) {
                 if (page.isSlotUsed(i) && page.getRecord(i).getKey() == key) {
-                    page.deleteRecord(i);
-                    pageInfo.setFreeSlots(pageInfo.getFreeSlots() + 1);
-                    writePageToDisk(page, pageInfo);
-                    writeDirectoryToDisk();
-                    return true;
+                    page.deleteRecord(i); // 레코드 삭제
+                    pageInfo.setFreeSlots(pageInfo.getFreeSlots() + 1); // 빈 슬롯 수 증가
+                    writePageToDisk(page, pageInfo); // 변경된 페이지 디스크에 기록
+                    writeDirectoryToDisk(); // 페이지 디렉토리 갱신
+                    return true; // 삭제 성공
                 }
             }
         }
-        return false; // Record not found
+        return false; // 레코드가 없으면 삭제 실패
     }
 
     /**
@@ -111,13 +118,15 @@ public class HeapFile {
      */
     public List<Record> rangeSearch(int lowerBound, int upperBound) throws IOException {
         List<Record> result = new ArrayList<>();
+        // 페이지 디렉토리 내 모든 페이지를 순차적으로 검색
         for (PageInfo pageInfo : pageDirectory.getPages()) {
             Page page = readPageFromDisk(pageInfo.getOffset());
+            // 각 페이지에서 범위 내의 레코드가 있는지 확인
             for (int i = 0; i < Page.SLOT_COUNT; i++) {
                 if (page.isSlotUsed(i)) {
                     Record record = page.getRecord(i);
                     if (record.getKey() >= lowerBound && record.getKey() <= upperBound) {
-                        result.add(record);
+                        result.add(record); // 범위 내의 레코드를 결과 목록에 추가
                     }
                 }
             }

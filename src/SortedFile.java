@@ -30,13 +30,17 @@ public class SortedFile {
 
     /**
      * Inserts a record into the sorted file.
+     * Searches through existing pages, and if a free slot is found, the record is inserted.
+     * If no free slots are available, a new page is created.
      *
      * @param record The record to insert.
      * @throws IOException If an I/O error occurs during the operation.
      */
     public void insertRecord(Record record) throws IOException {
+        // 기존 페이지들을 순차적으로 확인하여 빈 슬롯을 찾는다
         for (PageInfo pageInfo : pageDirectory.getPages()) {
             Page page = readPageFromDisk(pageInfo.getOffset());
+            // 빈 슬롯을 찾고, 그 위치에 레코드를 삽입
             for (int i = 0; i < Page.SLOT_COUNT; i++) {
                 if (!page.isSlotUsed(i) || page.getRecord(i).getKey() > record.getKey()) {
                     if (page.isSlotUsed(Page.SLOT_COUNT - 1)) {
@@ -68,15 +72,16 @@ public class SortedFile {
 
     /**
      * Searches for a record by its key.
+     * Searches through all pages in sorted order using binary search within each page.
      *
      * @param key The key of the record to search for.
      * @return The matching record, or null if not found.
      * @throws IOException If an I/O error occurs during the operation.
      */
     public Record searchRecord(int key) throws IOException {
+        // 페이지 디렉토리 내 모든 페이지를 순차적으로 검색
         for (PageInfo pageInfo : pageDirectory.getPages()) {
             Page page = readPageFromDisk(pageInfo.getOffset());
-
             // 이진 탐색을 사용하여 레코드 검색
             int left = 0;
             int right = Page.SLOT_COUNT - 1;
@@ -106,16 +111,19 @@ public class SortedFile {
 
     /**
      * Deletes a record by its key.
+     * Searches through all pages, removes the record, and shifts remaining records to fill the gap.
      *
      * @param key The key of the record to delete.
      * @return True if the record was successfully deleted, false otherwise.
      * @throws IOException If an I/O error occurs during the operation.
      */
     public boolean deleteRecord(int key) throws IOException {
+        // 모든 페이지를 확인하여 삭제할 레코드를 찾는다
         for (PageInfo pageInfo : pageDirectory.getPages()) {
             Page page = readPageFromDisk(pageInfo.getOffset());
             for (int i = 0; i < Page.SLOT_COUNT; i++) {
                 if (page.isSlotUsed(i) && page.getRecord(i).getKey() == key) {
+                    // 레코드를 삭제하고, 이후의 레코드를 한 칸씩 당긴다
                     page.deleteRecord(i);
                     for (int j = i; j < Page.SLOT_COUNT - 1; j++) {
                         if (page.isSlotUsed(j + 1)) {
@@ -135,7 +143,7 @@ public class SortedFile {
 
     /**
      * Performs a range search for records with keys within the specified bounds.
-     *
+     * Searches through all pages and collects records within the given key range.
      * @param lowerBound The lower bound of the range (inclusive).
      * @param upperBound The upper bound of the range (inclusive).
      * @return A list of matching records.
@@ -144,6 +152,7 @@ public class SortedFile {
     public List<Record> rangeSearch(int lowerBound, int upperBound) throws IOException {
         List<Record> result = new ArrayList<>();
 
+        // 모든 페이지에서 범위에 맞는 레코드를 찾는다
         for (PageInfo pageInfo : pageDirectory.getPages()) {
             Page page = readPageFromDisk(pageInfo.getOffset());
 
