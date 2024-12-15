@@ -6,11 +6,10 @@ import java.nio.charset.StandardCharsets;
  * Each record consists of an integer key and a fixed-length data string (250 bytes).
  */
 public class Record {
-    private int key; // Unique identifier for the record
-    private String data; // Fixed-length string (250 bytes)
-
     public static final int DATA_SIZE = 250; // Fixed size of data in bytes
     public static final int RECORD_SIZE = Integer.BYTES + DATA_SIZE; // Total record size in bytes
+    private int key; // Unique identifier for the record
+    private String data; // Fixed-length string (250 bytes)
 
     // Constructor to initialize a record with a key and data
     public Record(int key, String data) {
@@ -19,6 +18,24 @@ public class Record {
         }
         this.key = key;
         this.data = padOrTrimData(data);
+    }
+
+    /**
+     * Deserializes a record from a byte array.
+     *
+     * @param bytes Byte array containing the serialized record.
+     * @return A Record object reconstructed from the byte array.
+     */
+    public static Record fromByteArray(byte[] bytes) {
+        if (bytes.length != RECORD_SIZE) {
+            throw new IllegalArgumentException("Invalid byte array size");
+        }
+        ByteBuffer buffer = ByteBuffer.wrap(bytes);
+        int key = buffer.getInt(); // Deserialize the key
+        byte[] dataBytes = new byte[DATA_SIZE];
+        buffer.get(dataBytes); // Deserialize the data
+        String data = new String(dataBytes, StandardCharsets.UTF_8).trim();
+        return new Record(key, data);
     }
 
     /**
@@ -72,23 +89,5 @@ public class Record {
         buffer.putInt(key); // Serialize the key
         buffer.put(data.getBytes(StandardCharsets.UTF_8)); // Serialize the data
         return buffer.array();
-    }
-
-    /**
-     * Deserializes a record from a byte array.
-     *
-     * @param bytes Byte array containing the serialized record.
-     * @return A Record object reconstructed from the byte array.
-     */
-    public static Record fromByteArray(byte[] bytes) {
-        if (bytes.length != RECORD_SIZE) {
-            throw new IllegalArgumentException("Invalid byte array size");
-        }
-        ByteBuffer buffer = ByteBuffer.wrap(bytes);
-        int key = buffer.getInt(); // Deserialize the key
-        byte[] dataBytes = new byte[DATA_SIZE];
-        buffer.get(dataBytes); // Deserialize the data
-        String data = new String(dataBytes, StandardCharsets.UTF_8).trim();
-        return new Record(key, data);
     }
 }

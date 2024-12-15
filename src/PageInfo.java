@@ -12,12 +12,28 @@ public class PageInfo implements Serializable {
     /**
      * Constructs a PageInfo object with the specified offset and free slot count.
      *
-     * @param offset The starting offset of the page in the file.
+     * @param offset    The starting offset of the page in the file.
      * @param freeSlots The number of free slots in the page.
      */
     public PageInfo(long offset, int freeSlots) {
         this.offset = offset;
         this.freeSlots = freeSlots;
+    }
+
+    /**
+     * Deserializes a byte array to create a PageInfo object.
+     *
+     * @param bytes A byte array containing the serialized PageInfo data.
+     * @return A PageInfo object reconstructed from the byte array.
+     */
+    public static PageInfo fromByteArray(byte[] bytes) {
+        if (bytes.length != Long.BYTES + Integer.BYTES) {
+            throw new IllegalArgumentException("Invalid byte array length for PageInfo.");
+        }
+        ByteBuffer buffer = ByteBuffer.wrap(bytes); // Wrap byte array for reading
+        long offset = buffer.getLong(); // Extract offset
+        int freeSlots = buffer.getInt(); // Extract freeSlots
+        return new PageInfo(offset, freeSlots); // Create and return PageInfo
     }
 
     /**
@@ -57,21 +73,5 @@ public class PageInfo implements Serializable {
         buffer.putLong(offset); // Add offset to the buffer
         buffer.putInt(freeSlots); // Add freeSlots to the buffer
         return buffer.array(); // Return serialized data
-    }
-
-    /**
-     * Deserializes a byte array to create a PageInfo object.
-     *
-     * @param bytes A byte array containing the serialized PageInfo data.
-     * @return A PageInfo object reconstructed from the byte array.
-     */
-    public static PageInfo fromByteArray(byte[] bytes) {
-        if (bytes.length != Long.BYTES + Integer.BYTES) {
-            throw new IllegalArgumentException("Invalid byte array length for PageInfo.");
-        }
-        ByteBuffer buffer = ByteBuffer.wrap(bytes); // Wrap byte array for reading
-        long offset = buffer.getLong(); // Extract offset
-        int freeSlots = buffer.getInt(); // Extract freeSlots
-        return new PageInfo(offset, freeSlots); // Create and return PageInfo
     }
 }

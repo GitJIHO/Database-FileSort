@@ -9,7 +9,7 @@ import java.util.Random;
  * and performing range searches. The results will help evaluate and compare the efficiency of both file organizations
  * under different types of operations, giving insights into their relative performance strengths and weaknesses.
  */
- public class PerformanceTest {
+public class PerformanceTest {
     public static void main(String[] args) {
         try {
             // Define filenames for HeapFile and SortedFile (data and directory files)

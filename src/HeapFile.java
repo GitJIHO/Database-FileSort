@@ -7,18 +7,17 @@ import java.util.List;
  * functionality for insertion, search, deletion, and range-based queries.
  */
 public class HeapFile {
+    // Static counters for disk I/O statistics
+    private static int diskReadCount = 0;
+    private static int diskWriteCount = 0;
     private PageDirectory pageDirectory; // Metadata for all pages
     private String dataFilename; // Path to the data file
     private String directoryFilename; // Path to the page directory file
 
-    // Static counters for disk I/O statistics
-    private static int diskReadCount = 0;
-    private static int diskWriteCount = 0;
-
     /**
      * Constructs a HeapFile instance with specified filenames for data and directory.
      *
-     * @param dataFilename Path to the data file.
+     * @param dataFilename      Path to the data file.
      * @param directoryFilename Path to the directory file.
      * @throws IOException If an I/O error occurs while reading the directory.
      */
@@ -26,6 +25,20 @@ public class HeapFile {
         this.dataFilename = dataFilename;
         this.directoryFilename = directoryFilename;
         this.pageDirectory = readDirectoryFromDisk();
+    }
+
+    // Methods to access disk I/O statistics
+    public static int getDiskReadCount() {
+        return diskReadCount;
+    }
+
+    public static int getDiskWriteCount() {
+        return diskWriteCount;
+    }
+
+    public static void resetDiskIOCounters() {
+        diskReadCount = 0;
+        diskWriteCount = 0;
     }
 
     /**
@@ -191,19 +204,5 @@ public class HeapFile {
             raf.write(page.toByteArray());
             diskWriteCount++;
         }
-    }
-
-    // Methods to access disk I/O statistics
-    public static int getDiskReadCount() {
-        return diskReadCount;
-    }
-
-    public static int getDiskWriteCount() {
-        return diskWriteCount;
-    }
-
-    public static void resetDiskIOCounters() {
-        diskReadCount = 0;
-        diskWriteCount = 0;
     }
 }

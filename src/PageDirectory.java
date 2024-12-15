@@ -17,6 +17,25 @@ public class PageDirectory {
     }
 
     /**
+     * Deserializes a PageDirectory from a byte array.
+     *
+     * @param data The byte array containing the serialized PageDirectory.
+     * @return A PageDirectory object reconstructed from the byte array.
+     * @throws IOException            If an I/O error occurs during deserialization.
+     * @throws ClassNotFoundException If the serialized object class is not found.
+     */
+    public static PageDirectory fromByteArray(byte[] data) throws IOException, ClassNotFoundException {
+        try (ByteArrayInputStream bais = new ByteArrayInputStream(data);
+             ObjectInputStream ois = new ObjectInputStream(bais)) {
+            @SuppressWarnings("unchecked")
+            List<PageInfo> pages = (List<PageInfo>) ois.readObject();
+            PageDirectory pageDirectory = new PageDirectory();
+            pageDirectory.pages = pages;
+            return pageDirectory;
+        }
+    }
+
+    /**
      * Adds a new page to the directory.
      *
      * @param pageInfo The PageInfo object representing the page to add.
@@ -60,25 +79,6 @@ public class PageDirectory {
              ObjectOutputStream oos = new ObjectOutputStream(baos)) {
             oos.writeObject(pages); // Serialize the list of PageInfo objects
             return baos.toByteArray();
-        }
-    }
-
-    /**
-     * Deserializes a PageDirectory from a byte array.
-     *
-     * @param data The byte array containing the serialized PageDirectory.
-     * @return A PageDirectory object reconstructed from the byte array.
-     * @throws IOException If an I/O error occurs during deserialization.
-     * @throws ClassNotFoundException If the serialized object class is not found.
-     */
-    public static PageDirectory fromByteArray(byte[] data) throws IOException, ClassNotFoundException {
-        try (ByteArrayInputStream bais = new ByteArrayInputStream(data);
-             ObjectInputStream ois = new ObjectInputStream(bais)) {
-            @SuppressWarnings("unchecked")
-            List<PageInfo> pages = (List<PageInfo>) ois.readObject();
-            PageDirectory pageDirectory = new PageDirectory();
-            pageDirectory.pages = pages;
-            return pageDirectory;
         }
     }
 }

@@ -3,18 +3,31 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SortedFile {
-    private PageDirectory pageDirectory;
-    private String dataFilename;
-    private String directoryFilename;
-
     // Static counters for disk I/O statistics
     private static int diskReadCount = 0;
     private static int diskWriteCount = 0;
+    private PageDirectory pageDirectory;
+    private String dataFilename;
+    private String directoryFilename;
 
     public SortedFile(String dataFilename, String directoryFilename) throws IOException {
         this.dataFilename = dataFilename;
         this.directoryFilename = directoryFilename;
         this.pageDirectory = readDirectoryFromDisk();
+    }
+
+    // Methods to access disk I/O statistics
+    public static int getDiskReadCount() {
+        return diskReadCount;
+    }
+
+    public static int getDiskWriteCount() {
+        return diskWriteCount;
+    }
+
+    public static void resetDiskIOCounters() {
+        diskReadCount = 0;
+        diskWriteCount = 0;
     }
 
     /**
@@ -293,19 +306,5 @@ public class SortedFile {
             raf.write(page.toByteArray());
             diskWriteCount++;
         }
-    }
-
-    // Methods to access disk I/O statistics
-    public static int getDiskReadCount() {
-        return diskReadCount;
-    }
-
-    public static int getDiskWriteCount() {
-        return diskWriteCount;
-    }
-
-    public static void resetDiskIOCounters() {
-        diskReadCount = 0;
-        diskWriteCount = 0;
     }
 }

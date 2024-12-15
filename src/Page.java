@@ -7,13 +7,12 @@ import java.nio.ByteBuffer;
  * The header uses a bitmap to track which slots are occupied by records.
  */
 public class Page {
-    private byte[] header; // Bitmap to track used slots
-    private Record[] records; // Array to store records in the page
-
     public static final int PAGE_SIZE = 4096; // 4KB page size
     public static final int RECORD_SIZE = Record.RECORD_SIZE;
     public static final int SLOT_COUNT = 16; // Number of record slots
     public static final int HEADER_SIZE = (int) Math.ceil(SLOT_COUNT / 8.0); // Header size in bytes
+    private byte[] header; // Bitmap to track used slots
+    private Record[] records; // Array to store records in the page
 
     /**
      * Constructs an empty page with initialized header and record array.
@@ -21,6 +20,40 @@ public class Page {
     public Page() {
         header = new byte[HEADER_SIZE]; // Initialize the header
         records = new Record[SLOT_COUNT]; // Initialize the record array
+    }
+
+    /**
+     * Deserializes a byte array into a Page object, reconstructing the header and records.
+     *
+     * @param bytes The byte array containing the serialized page data.
+     * @return A Page object reconstructed from the byte array.
+     * @throws IllegalArgumentException if the byte array size is invalid.
+     */
+    public static Page fromByteArray(byte[] bytes) {
+        if (bytes.length != PAGE_SIZE) {
+            throw new IllegalArgumentException("Invalid page size: " + bytes.length);
+        }
+
+        Page page = new Page(); // Create a new page instance
+        ByteBuffer buffer = ByteBuffer.wrap(bytes); // Wrap the byte array for reading
+
+        // Read the header from the buffer
+        buffer.get(page.header);
+
+        // Read each record from the buffer
+        for (int i = 0; i < SLOT_COUNT; i++) {
+            byte[] recordBytes = new byte[RECORD_SIZE]; // Allocate space for a record
+            buffer.get(recordBytes); // Read the record data
+            if (page.isSlotUsed(i)) {
+                try {
+                    page.records[i] = Record.fromByteArray(recordBytes); // Deserialize the record
+                } catch (Exception e) {
+                    throw new RuntimeException("Failed to deserialize record at slot " + i, e);
+                }
+            }
+        }
+
+        return page; // Return the reconstructed Page object
     }
 
     /**
@@ -52,7 +85,7 @@ public class Page {
      * Marks a specific slot in the bitmap as used or unused.
      *
      * @param slotIndex The index of the slot to mark.
-     * @param used True to mark the slot as used, false to mark it as unused.
+     * @param used      True to mark the slot as used, false to mark it as unused.
      */
     public void setSlotUsed(int slotIndex, boolean used) {
         validateSlotIndex(slotIndex); // Ensure the slot index is valid
@@ -69,7 +102,7 @@ public class Page {
      * Inserts a record into a specified slot.
      *
      * @param slotIndex The index of the slot to insert the record into.
-     * @param record The record to insert.
+     * @param record    The record to insert.
      * @throws IllegalArgumentException if the slot index is invalid or already used.
      */
     public void insertRecord(int slotIndex, Record record) {
@@ -166,40 +199,6 @@ public class Page {
         }
 
         return buffer.array(); // Return the serialized byte array
-    }
-
-    /**
-     * Deserializes a byte array into a Page object, reconstructing the header and records.
-     *
-     * @param bytes The byte array containing the serialized page data.
-     * @return A Page object reconstructed from the byte array.
-     * @throws IllegalArgumentException if the byte array size is invalid.
-     */
-    public static Page fromByteArray(byte[] bytes) {
-        if (bytes.length != PAGE_SIZE) {
-            throw new IllegalArgumentException("Invalid page size: " + bytes.length);
-        }
-
-        Page page = new Page(); // Create a new page instance
-        ByteBuffer buffer = ByteBuffer.wrap(bytes); // Wrap the byte array for reading
-
-        // Read the header from the buffer
-        buffer.get(page.header);
-
-        // Read each record from the buffer
-        for (int i = 0; i < SLOT_COUNT; i++) {
-            byte[] recordBytes = new byte[RECORD_SIZE]; // Allocate space for a record
-            buffer.get(recordBytes); // Read the record data
-            if (page.isSlotUsed(i)) {
-                try {
-                    page.records[i] = Record.fromByteArray(recordBytes); // Deserialize the record
-                } catch (Exception e) {
-                    throw new RuntimeException("Failed to deserialize record at slot " + i, e);
-                }
-            }
-        }
-
-        return page; // Return the reconstructed Page object
     }
 
     /**
